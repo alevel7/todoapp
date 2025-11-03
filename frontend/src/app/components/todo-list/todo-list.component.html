@@ -1,0 +1,115 @@
+<div class="todo-app">
+  <h1>Todo Application</h1>
+
+  <!-- Add new todo form -->
+  <div class="add-todo-form">
+    <h2>Add New Todo</h2>
+    <div class="form-group">
+      <input
+        type="text"
+        [(ngModel)]="newTodoTitle"
+        placeholder="Enter todo title..."
+        class="form-control"
+        (keyup.enter)="addTodo()"
+      />
+    </div>
+    <div class="form-group">
+      <textarea
+        [(ngModel)]="newTodoDescription"
+        placeholder="Enter description (optional)..."
+        class="form-control"
+        rows="3"
+      ></textarea>
+    </div>
+    <button
+      (click)="addTodo()"
+      [disabled]="!newTodoTitle.trim()"
+      class="btn btn-primary"
+    >
+      Add Todo
+    </button>
+  </div>
+
+  <!-- Loading indicator -->
+  <div *ngIf="loading" class="loading">
+    Loading todos...
+  </div>
+
+  <!-- Todo list -->
+  <div class="todo-list" *ngIf="!loading">
+    <h2>Your Todos ({{ todos.length }})</h2>
+    
+    <div *ngIf="todos.length === 0" class="no-todos">
+      No todos yet. Add one above!
+    </div>
+
+    <div *ngFor="let todo of todos" class="todo-item" [class.completed]="todo.completed">
+      <div *ngIf="editingTodo?.id !== todo.id" class="todo-display">
+        <div class="todo-content">
+          <div class="todo-header">
+            <h3 [class.completed-text]="todo.completed">{{ todo.title }}</h3>
+            <div class="todo-actions">
+              <button
+                (click)="toggleComplete(todo)"
+                [class]="todo.completed ? 'btn btn-warning' : 'btn btn-success'"
+              >
+                {{ todo.completed ? 'Mark Incomplete' : 'Mark Complete' }}
+              </button>
+              <button (click)="startEdit(todo)" class="btn btn-secondary">
+                Edit
+              </button>
+              <button (click)="deleteTodo(todo)" class="btn btn-danger">
+                Delete
+              </button>
+            </div>
+          </div>
+          <p *ngIf="todo.description" class="todo-description" [class.completed-text]="todo.completed">
+            {{ todo.description }}
+          </p>
+          <small class="todo-dates">
+            Created: {{ todo.createdAt | date:'short' }}
+            <span *ngIf="todo.updatedAt !== todo.createdAt">
+              | Updated: {{ todo.updatedAt | date:'short' }}
+            </span>
+          </small>
+        </div>
+        <div class="todo-status">
+          <span [class]="todo.completed ? 'status-completed' : 'status-pending'">
+            {{ todo.completed ? '✓ Completed' : '○ Pending' }}
+          </span>
+        </div>
+      </div>
+
+      <div *ngIf="editingTodo?.id === todo.id" class="todo-edit">
+        <div class="form-group">
+          <input
+            type="text"
+            [(ngModel)]="editingTodo!.title"
+            class="form-control"
+            placeholder="Todo title"
+          />
+        </div>
+        <div class="form-group">
+          <textarea
+            [(ngModel)]="editingTodo!.description"
+            class="form-control"
+            placeholder="Description (optional)"
+            rows="3"
+          ></textarea>
+        </div>
+        <div class="edit-actions">
+          <button
+            (click)="saveEdit()"
+            [disabled]="!editingTodo!.title.trim()"
+            class="btn btn-success"
+          >
+            Save
+          </button>
+          <button (click)="cancelEdit()" class="btn btn-secondary">
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
