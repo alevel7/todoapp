@@ -1,0 +1,19 @@
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "3000:3000"
+    # mount only the sqlite db for persistence; do NOT mount the whole backend folder
+    # because it can overwrite container node_modules (host-built binaries) which will
+    # break native modules like sqlite3 inside the Linux container.
+    volumes:
+      - ./backend/todos.db:/app/todos.db
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "4200:80"
+    depends_on:
+      - backend
+    restart: unless-stopped

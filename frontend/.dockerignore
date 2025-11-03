@@ -1,0 +1,12 @@
+node_modules
+dist
+.angular
+.git
+nginx.conf
+Dockerfile
+*.log
+/.idea
+/.vscode
+coverage
+tmp
+*.bak
