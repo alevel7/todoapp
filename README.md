@@ -65,14 +65,3 @@ This project intentionally mounts only the SQLite DB file (`./backend/todos.db:/
 - `backend/Dockerfile`, `backend/.dockerignore`
 - `docker-compose.yml`
 
-## Next steps / Suggestions
-
-- Add health checks to the backend service for compose `depends_on` to wait for healthy state.
-- Add a simple CI workflow to build and push images.
-
----
-
-If you want, I can:
-- Add a `Makefile` with common commands.
-- Add a `healthcheck` to the backend service in `docker-compose.yml`.
-- Commit these changes to Git and push (if you want me to create the commit).
