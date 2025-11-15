@@ -47,7 +47,7 @@ export class TodoRoutes {
 
   private async createTodo(req: Request, res: Response): Promise<void> {
     try {
-      const { title, description }: CreateTodoRequest = req.body;
+      const { title, description, reminderDate }: CreateTodoRequest = req.body;
       
       if (!title) {
         res.status(400).json({ error: 'Title is required' });
@@ -57,7 +57,8 @@ export class TodoRoutes {
       const todo = await this.db.createTodo({
         title,
         description,
-        completed: false
+        completed: false,
+        reminderDate
       });
       
       res.status(201).json(todo);

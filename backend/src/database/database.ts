@@ -16,6 +16,7 @@ export class Database {
         title TEXT NOT NULL,
         description TEXT,
         completed BOOLEAN DEFAULT 0,
+        reminderDate DATETIME,
         createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
         updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
       )
@@ -26,13 +27,37 @@ export class Database {
         console.error('Error creating table:', err);
       } else {
         console.log('Database initialized successfully');
+        // Add reminderDate column if it doesn't exist (migration)
+        this.addReminderDateColumn();
+      }
+    });
+  }
+
+  private addReminderDateColumn(): void {
+    // Check if reminderDate column exists, if not add it
+    this.db.all("PRAGMA table_info(todos)", (err, rows: any[]) => {
+      if (err) {
+        console.error('Error checking table schema:', err);
+        return;
+      }
+      
+      const hasReminderDate = rows.some(row => row.name === 'reminderDate');
+      
+      if (!hasReminderDate) {
+        this.db.run('ALTER TABLE todos ADD COLUMN reminderDate DATETIME', (err) => {
+          if (err) {
+            console.error('Error adding reminderDate column:', err);
+          } else {
+            console.log('Added reminderDate column to todos table');
+          }
+        });
       }
     });
   }
 
   getAllTodos(): Promise<Todo[]> {
     return new Promise((resolve, reject) => {
-      this.db.all('SELECT * FROM todos ORDER BY createdAt DESC', (err, rows) => {
+      this.db.all('SELECT * FROM todos ORDER BY reminderDate ASC, createdAt DESC', (err, rows) => {
         if (err) {
           reject(err);
         } else {
@@ -56,10 +81,10 @@ export class Database {
 
   createTodo(todo: Omit<Todo, 'id'>): Promise<Todo> {
     return new Promise((resolve, reject) => {
-      const { title, description, completed } = todo;
-      const query = 'INSERT INTO todos (title, description, completed) VALUES (?, ?, ?)';
+      const { title, description, completed, reminderDate } = todo;
+      const query = 'INSERT INTO todos (title, description, completed, reminderDate) VALUES (?, ?, ?, ?)';
       
-      this.db.run(query, [title, description, completed], function(err) {
+      this.db.run(query, [title, description, completed, reminderDate], function(err) {
         if (err) {
           reject(err);
         } else {
@@ -68,6 +93,7 @@ export class Database {
             title,
             description,
             completed,
+            reminderDate,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString()
           });
@@ -92,6 +118,10 @@ export class Database {
       if (updates.completed !== undefined) {
         fields.push('completed = ?');
         values.push(updates.completed);
+      }
+      if (updates.reminderDate !== undefined) {
+        fields.push('reminderDate = ?');
+        values.push(updates.reminderDate);
       }
       
       fields.push('updatedAt = ?');

@@ -11,13 +11,36 @@ export class TodoListComponent implements OnInit {
   todos: Todo[] = [];
   newTodoTitle: string = '';
   newTodoDescription: string = '';
+  newTodoReminderDate: string = '';
   editingTodo: Todo | null = null;
   loading: boolean = false;
+  sortOrder: 'date-asc' | 'date-desc' = 'date-asc';
 
   constructor(private todoService: TodoService) { }
 
   ngOnInit(): void {
+    this.setDefaultReminderDate();
     this.loadTodos();
+  }
+
+  setDefaultReminderDate(): void {
+    const now = new Date();
+    // Format: YYYY-MM-DDTHH:MM (datetime-local input format)
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    this.newTodoReminderDate = `${year}-${month}-${day}T${hours}:${minutes}`;
+  }
+
+  isToday(dateString?: string): boolean {
+    if (!dateString) return false;
+    const todoDate = new Date(dateString);
+    const today = new Date();
+    return todoDate.getFullYear() === today.getFullYear() &&
+           todoDate.getMonth() === today.getMonth() &&
+           todoDate.getDate() === today.getDate();
   }
 
   loadTodos(): void {
@@ -25,6 +48,7 @@ export class TodoListComponent implements OnInit {
     this.todoService.getAllTodos().subscribe({
       next: (todos) => {
         this.todos = todos;
+        this.sortTodos();
         this.loading = false;
       },
       error: (error) => {
@@ -34,19 +58,46 @@ export class TodoListComponent implements OnInit {
     });
   }
 
+  sortTodos(): void {
+    this.todos.sort((a, b) => {
+      const dateA = a.reminderDate ? new Date(a.reminderDate).getTime() : 0;
+      const dateB = b.reminderDate ? new Date(b.reminderDate).getTime() : 0;
+      
+      if (this.sortOrder === 'date-asc') {
+        // Todos without dates go to the end
+        if (!a.reminderDate && b.reminderDate) return 1;
+        if (a.reminderDate && !b.reminderDate) return -1;
+        return dateA - dateB;
+      } else {
+        // Todos without dates go to the end
+        if (!a.reminderDate && b.reminderDate) return 1;
+        if (a.reminderDate && !b.reminderDate) return -1;
+        return dateB - dateA;
+      }
+    });
+  }
+
+  toggleSortOrder(): void {
+    this.sortOrder = this.sortOrder === 'date-asc' ? 'date-desc' : 'date-asc';
+    this.sortTodos();
+  }
+
   addTodo(): void {
     if (!this.newTodoTitle.trim()) return;
 
     const newTodo = {
       title: this.newTodoTitle,
-      description: this.newTodoDescription
+      description: this.newTodoDescription,
+      reminderDate: this.newTodoReminderDate
     };
 
     this.todoService.createTodo(newTodo).subscribe({
       next: (todo) => {
-        this.todos.unshift(todo);
+        this.todos.push(todo);
+        this.sortTodos();
         this.newTodoTitle = '';
         this.newTodoDescription = '';
+        this.setDefaultReminderDate();
       },
       error: (error) => {
         console.error('Error creating todo:', error);
@@ -81,7 +132,8 @@ export class TodoListComponent implements OnInit {
 
     const updates = {
       title: this.editingTodo.title,
-      description: this.editingTodo.description
+      description: this.editingTodo.description,
+      reminderDate: this.editingTodo.reminderDate
     };
 
     this.todoService.updateTodo(this.editingTodo.id!, updates).subscribe({
@@ -89,6 +141,7 @@ export class TodoListComponent implements OnInit {
         const index = this.todos.findIndex(t => t.id === updatedTodo.id);
         if (index !== -1) {
           this.todos[index] = updatedTodo;
+          this.sortTodos();
         }
         this.editingTodo = null;
       },
