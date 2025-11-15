@@ -18,6 +18,24 @@ h2 {
   margin-bottom: 20px;
 }
 
+.todo-list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.todo-list-header h2 {
+  margin: 0;
+  border: none;
+  padding: 0;
+}
+
+.btn-sort {
+  font-size: 14px;
+  padding: 8px 16px;
+}
+
 .add-todo-form {
   background-color: #f8f9fa;
   padding: 20px;
@@ -28,6 +46,13 @@ h2 {
 
 .form-group {
   margin-bottom: 15px;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 500;
+  color: #555;
 }
 
 .form-control {
@@ -137,6 +162,16 @@ h2 {
   border-color: #28a745;
 }
 
+.todo-item.today-todo {
+  background-color: #fff3cd;
+  border-left: 4px solid #ffc107;
+}
+
+.todo-item.today-todo.completed {
+  background-color: #e8f5e9;
+  border-left: 4px solid #28a745;
+}
+
 .todo-display {
   display: flex;
   justify-content: space-between;
@@ -170,6 +205,23 @@ h2 {
   margin: 10px 0;
   color: #666;
   line-height: 1.4;
+}
+
+.todo-reminder {
+  margin: 10px 0;
+  color: #495057;
+  font-size: 14px;
+}
+
+.today-badge {
+  display: inline-block;
+  background-color: #ffc107;
+  color: #212529;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: bold;
+  margin-left: 8px;
 }
 
 .todo-dates {
